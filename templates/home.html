@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fire Weather Index Results</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'bounce-gentle': 'bounceGentle 2s infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'scale-in': 'scaleIn 0.4s ease-out',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        bounceGentle: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        scaleIn: {
+                            '0%': { transform: 'scale(0.8)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .risk-low { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .risk-moderate { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .risk-high { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .btn-hover {
+            transition: all 0.3s ease;
+        }
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen p-4">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8 animate-fade-in">
+            <div class="inline-block p-4 rounded-full bg-white/10 backdrop-blur-sm mb-4 animate-float">
+                <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path>
+                </svg>
+            </div>
+            <h1 class="text-4xl font-bold text-white mb-2">Fire Risk Assessment</h1>
+            <p class="text-xl text-white/80">Complete Analysis Report</p>
+        </div>
+
+        <!-- Main Result Card -->
+        <div class="glass-effect rounded-2xl p-8 mb-8 shadow-2xl animate-scale-in">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-semibold text-white mb-4">Fire Weather Index Prediction</h2>
+
+                <!-- FWI Value Display -->
+                <div class="inline-block bg-white/20 rounded-2xl p-6 mb-4 animate-bounce-gentle">
+                    <div class="text-6xl font-bold text-white mb-2">{{ "%.2f"|format(prediction) }}</div>
+                    <div class="text-lg text-white/80">FWI Score</div>
+                </div>
+
+                <!-- Fire Classification -->
+                {% if prediction < 10 %}
+                <div class="inline-flex items-center bg-green-500/20 text-green-100 px-6 py-3 rounded-full text-lg font-medium animate-pulse-slow">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    LOW RISK - No Fire
+                </div>
+                {% elif prediction < 20 %}
+                <div class="inline-flex items-center bg-yellow-500/20 text-yellow-100 px-6 py-3 rounded-full text-lg font-medium animate-pulse-slow">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    MODERATE RISK - Potential Fire
+                </div>
+                {% else %}
+                <div class="inline-flex items-center bg-red-500/20 text-red-100 px-6 py-3 rounded-full text-lg font-medium animate-pulse-slow">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path>
+                    </svg>
+                    HIGH RISK - Fire Danger
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Risk Scale -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-white mb-3 text-center">Risk Assessment Scale</h3>
+                <div class="flex justify-center space-x-2">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                        <span class="text-sm text-white/80">Low (&lt;10)</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div>
+                        <span class="text-sm text-white/80">Moderate (10-20)</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
+                        <span class="text-sm text-white/80">High (&gt;20)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weather Summary -->
+        <div class="glass-effect rounded-2xl p-6 shadow-2xl animate-slide-up" style="animation-delay: 0.3s">
+            <h3 class="text-xl font-semibold text-white mb-6 text-center">Weather Conditions Summary</h3>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Temperature -->
+                <div class="bg-white/10 rounded-lg p-4 text-center">
+                    <div class="text-2xl mb-1">🌡️</div>
+                    <div class="text-lg font-medium text-white">{{ request.form.Temperature }}°C</div>
+                    <div class="text-sm text-white/70">Temperature</div>
+                </div>
+
+                <!-- Humidity -->
+                <div class="bg-white/10 rounded-lg p-4 text-center">
+                    <div class="text-2xl mb-1">💧</div>
+                    <div class="text-lg font-medium text-white">{{ request.form.RH }}%</div>
+                    <div class="text-sm text-white/70">Humidity</div>
+                </div>
+
+                <!-- Wind Speed -->
+                <div class="bg-white/10 rounded-lg p-4 text-center">
+                    <div class="text-2xl mb-1">💨</div>
+                    <div class="text-lg font-medium text-white">{{ request.form.Ws }} km/h</div>
+                    <div class="text-sm text-white/70">Wind Speed</div>
+                </div>
+
+                <!-- Rain -->
+                <div class="bg-white/10 rounded-lg p-4 text-center">
+                    <div class="text-2xl mb-1">🌧️</div>
+                    <div class="text-lg font-medium text-white">{{ request.form.Rain }} mm</div>
+                    <div class="text-sm text-white/70">Rainfall</div>
+                </div>
+            </div>
+
+            <!-- Additional Parameters -->
+            <div class="grid grid-cols-3 gap-4 mt-4">
+                <div class="bg-white/10 rounded-lg p-3 text-center">
+                    <div class="text-sm font-medium text-white">{{ request.form.FFMC }}</div>
+                    <div class="text-xs text-white/70">FFMC</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-3 text-center">
+                    <div class="text-sm font-medium text-white">{{ request.form.DMC }}</div>
+                    <div class="text-xs text-white/70">DMC</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-3 text-center">
+                    <div class="text-sm font-medium text-white">{{ request.form.ISI }}</div>
+                    <div class="text-xs text-white/70">ISI</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-center space-x-4 mt-8 animate-fade-in" style="animation-delay: 0.6s">
+            <a href="/" class="btn-hover bg-white/20 hover:bg-white/30 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300">
+                <span class="flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"></path>
+                    </svg>
+                    New Prediction
+                </span>
+            </a>
+
+            <button onclick="window.print()" class="btn-hover bg-blue-500/80 hover:bg-blue-600/80 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300">
+                <span class="flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                    Print Report
+                </span>
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-white/60 text-sm animate-fade-in" style="animation-delay: 1s">
+            <p>Advanced AI-Powered Forest Fire Prediction System [Sprinboard]</p>
+            <p class="mt-1">Generated on {{ now.strftime('%Y-%m-%d %H:%M:%S') if now else 'Real-time' }}</p>
+        </div>
+    </div>
+
+    <!-- Background Animation -->
+    <div class="fixed inset-0 pointer-events-none">
+        <div class="absolute top-1/4 left-1/4 w-2 h-2 bg-white/20 rounded-full animate-pulse-slow"></div>
+        <div class="absolute top-3/4 right-1/4 w-1 h-1 bg-white/30 rounded-full animate-pulse-slow" style="animation-delay: 1s"></div>
+        <div class="absolute top-1/2 left-1/2 w-3 h-3 bg-white/10 rounded-full animate-pulse-slow" style="animation-delay: 2s"></div>
+    </div>
+</body>
+</html>
