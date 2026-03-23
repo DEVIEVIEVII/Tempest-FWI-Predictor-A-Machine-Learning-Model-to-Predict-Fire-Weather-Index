@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burned Area Prediction</title>
+    <style>
+        :root {
+            --bg: radial-gradient(circle at top, #ffe6b8 0%, #f1b56b 35%, #8d3f20 100%);
+            --card: rgba(45, 20, 11, 0.82);
+            --text: #fff6ed;
+            --muted: #f3d3b5;
+            --accent: #ffd089;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .card {
+            width: min(560px, 100%);
+            padding: 36px;
+            border-radius: 24px;
+            background: var(--card);
+            text-align: center;
+            box-shadow: 0 24px 48px rgba(24, 8, 3, 0.28);
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: clamp(2rem, 5vw, 2.8rem);
+        }
+
+        p {
+            margin: 0 0 24px;
+            color: var(--muted);
+        }
+
+        .result {
+            margin: 28px 0;
+            padding: 22px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.08);
+            font-size: clamp(1.5rem, 5vw, 2.1rem);
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .error {
+            color: #ffd7cc;
+            background: rgba(255, 110, 82, 0.12);
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 12px 18px;
+            border-radius: 999px;
+            color: #2a130b;
+            background: #ffd089;
+            text-decoration: none;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <h1>Prediction Complete</h1>
+        <p>The application used your dataset-trained ridge regression model successfully.</p>
+
+        {% if error %}
+        <div class="result error">{{ error }}</div>
+        {% else %}
+        <div class="result">Estimated burned area: {{ prediction_text }}</div>
+        {% endif %}
+
+        <a href="{{ url_for('index') }}">Try Another Prediction</a>
+    </main>
+</body>
+</html>

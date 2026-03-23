@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forest Fire Area Predictor</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: linear-gradient(135deg, #f4efe6 0%, #f7d8a8 45%, #d96c3d 100%);
+            --card: rgba(255, 250, 244, 0.92);
+            --text: #2f1b12;
+            --muted: #6e4a3b;
+            --accent: #b6421f;
+            --accent-dark: #7d2811;
+            --border: rgba(125, 40, 17, 0.15);
+            --shadow: 0 20px 50px rgba(63, 24, 14, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .card {
+            width: min(760px, 100%);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            padding: 32px;
+            backdrop-filter: blur(8px);
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: clamp(2rem, 4vw, 3rem);
+        }
+
+        p {
+            margin: 0 0 24px;
+            color: var(--muted);
+        }
+
+        .alert {
+            margin-bottom: 20px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: #fff1eb;
+            color: #8a2e14;
+            border: 1px solid rgba(138, 46, 20, 0.18);
+        }
+
+        form {
+            display: grid;
+            gap: 18px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        label {
+            display: grid;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        input {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            font: inherit;
+            background: rgba(255, 255, 255, 0.92);
+            color: var(--text);
+        }
+
+        input:focus {
+            outline: 2px solid rgba(182, 66, 31, 0.25);
+            border-color: var(--accent);
+        }
+
+        button {
+            border: 0;
+            border-radius: 999px;
+            padding: 14px 22px;
+            font: inherit;
+            font-weight: 700;
+            color: #fff8f1;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            cursor: pointer;
+            justify-self: start;
+            box-shadow: 0 10px 24px rgba(125, 40, 17, 0.24);
+        }
+
+        button:hover {
+            filter: brightness(1.05);
+        }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <h1>Forest Fire Area Predictor</h1>
+        <p>Enter the weather and fire-behavior values below to estimate the burned forest area.</p>
+
+        {% if model_load_error %}
+        <div class="alert">
+            Application could not start: {{ model_load_error }}
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('predict') }}" method="post">
+            <div class="grid">
+                <label>
+                    Temperature
+                    <input type="number" name="temp" step="any" placeholder="e.g. 29.7" required>
+                </label>
+                <label>
+                    Relative Humidity
+                    <input type="number" name="rh" step="any" placeholder="e.g. 58" required>
+                </label>
+                <label>
+                    Wind
+                    <input type="number" name="wind" step="any" placeholder="e.g. 13" required>
+                </label>
+                <label>
+                    Rain
+                    <input type="number" name="rain" step="any" placeholder="e.g. 0.0" required>
+                </label>
+                <label>
+                    FFMC
+                    <input type="number" name="ffmc" step="any" placeholder="e.g. 86.2" required>
+                </label>
+                <label>
+                    DMC
+                    <input type="number" name="dmc" step="any" placeholder="e.g. 26.2" required>
+                </label>
+                <label>
+                    ISI
+                    <input type="number" name="isi" step="any" placeholder="e.g. 5.1" required>
+                </label>
+            </div>
+            <button type="submit">Predict Burned Area</button>
+        </form>
+    </main>
+</body>
+</html>
