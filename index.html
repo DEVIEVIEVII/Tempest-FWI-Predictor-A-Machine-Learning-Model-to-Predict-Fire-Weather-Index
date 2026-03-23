@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FWI Prediction</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <h2><i class="fas fa-cloud-sun"></i> Enter Weather Details</h2>
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            text-align: center;
+            color: white;
+        }
+        .container {
+            background: white;
+            color: black;
+            padding: 20px;
+            width: 350px;
+            margin: auto;
+            margin-top: 50px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px gray;
+        }
+        input {
+            width: 90%;
+            padding: 8px;
+            margin: 5px;
+        }
+        button {
+            padding: 10px;
+            background: #ff5e62;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #ff9966;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>🔥 Fire Weather Index Prediction</h2>
+
+        <form action="/predict" method="post">
+            <input type="text" name="Temperature" placeholder="Temperature"><br>
+            <input type="text" name="RH" placeholder="Humidity"><br>
+            <input type="text" name="Ws" placeholder="Wind Speed"><br>
+            <input type="text" name="Rain" placeholder="Rain"><br>
+            <input type="text" name="FFMC" placeholder="FFMC"><br>
+            <input type="text" name="DMC" placeholder="DMC"><br>
+            <input type="text" name="DC" placeholder="DC"><br>
+            <input type="text" name="ISI" placeholder="ISI"><br>
+            <input type="text" name="BUI" placeholder="BUI"><br>
+
+            <button type="submit">Predict</button>
+        </form>
+    </div>
+
+</body>
+</html>

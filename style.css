@@ -1,0 +1,22 @@
+body {
+    animation: fadeIn 1.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+button {
+    transition: transform 0.3s ease;
+}
+
+button:hover {
+    transform: scale(1.1);
+}
+.container, .box {
+    transition: transform 0.3s ease;
+}
+
+.container:hover, .box:hover {
+    transform: translateY(-5px);
+}
