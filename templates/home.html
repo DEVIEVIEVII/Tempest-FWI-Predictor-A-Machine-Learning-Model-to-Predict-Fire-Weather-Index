@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}FWI Predictor | Result{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <div class="hero-copy">
+      <h2>The model has processed the inputs and produced a fire weather estimate.</h2>
+      <p>
+        This result reflects the trained ridge model output for the values you submitted.
+        Use it as a quick indicator of the predicted Forest Fire Weather Index.
+      </p>
+    </div>
+    <aside class="hero-panel">
+      <div>
+        <strong>Interpretation</strong>
+        <span>A higher value generally indicates more concerning fire weather conditions, but the score should be read alongside the underlying inputs.</span>
+      </div>
+      <div>
+        <strong>Next step</strong>
+        <span>Adjust the inputs and run another prediction if you want to test different weather scenarios.</span>
+      </div>
+    </aside>
+  </section>
+
+  <section class="result-grid">
+    <div class="result-card">
+      <p class="result-label">Predicted FWI</p>
+      <h2 class="result-value">{{ prediction }}</h2>
+      <p class="result-copy">
+        The value above is rounded to three decimal places and returned directly from the model pipeline.
+      </p>
+      <div class="footer-note">You can return to the form to compare another set of weather conditions.</div>
+    </div>
+
+    <aside class="stats-card">
+      <div class="stat">
+        <strong>Prediction source</strong>
+        <span>Ridge regression model + scaler loaded from the saved artifacts directory.</span>
+      </div>
+      <div class="stat">
+        <strong>Input contract</strong>
+        <span>The prediction uses the same nine feature values defined by the model schema.</span>
+      </div>
+      <div class="stat">
+        <strong>Navigation</strong>
+        <span>Click below to go back and adjust the inputs.</span>
+      </div>
+      <div class="button-row">
+        <a class="link-btn" href="/">Back to form</a>
+      </div>
+    </aside>
+  </section>
+{% endblock %}

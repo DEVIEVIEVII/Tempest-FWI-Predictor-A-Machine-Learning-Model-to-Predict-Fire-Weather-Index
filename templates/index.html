@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}FWI Predictor | Input{% endblock %}
+
+{% block content %}
+  {% set full_forms = {
+    'RH': 'Relative Humidity',
+    'Ws': 'Wind Speed',
+    'FFMC': 'Fine Fuel Moisture Code',
+    'DMC': 'Duff Moisture Code',
+    'ISI': 'Initial Spread Index',
+    'BUI': 'Build Up Index',
+    'FWI': 'Fire Weather Index',
+    'Region_encoded': 'Region Code'
+  } %}
+
+  <section class="hero">
+    <div class="hero-copy">
+      <h2>Enter the weather and fuel conditions to estimate the fire danger index.</h2>
+      <p>
+        Use the trained model inputs below to predict the Forest Fire Weather Index.
+        Every field maps directly to the model schema, so the order and names stay aligned with the pipeline.
+      </p>
+    </div>
+    <aside class="hero-panel">
+      <div>
+        <strong>Input guidelines</strong>
+        <span>All values are numeric. Leave no field empty, and use the same encoded values that were used during training.</span>
+      </div>
+      <div>
+        <strong>Model note</strong>
+        <span>The last field is <span class="mini-note">Region_encoded</span>, which should match the dataset encoding used by the model.</span>
+      </div>
+    </aside>
+  </section>
+
+  <form action="/predict" method="post">
+    <div class="form-grid">
+      {% for feature in features %}
+        <div class="field {% if feature == 'Region_encoded' %}full{% endif %}">
+          <label for="{{ feature }}">
+            <span>
+              {{ feature }}{% if feature in full_forms %} ({{ full_forms[feature] }}){% endif %}
+            </span>
+            <span class="tag">numeric</span>
+          </label>
+          <input
+            id="{{ feature }}"
+            type="number"
+            step="any"
+            name="{{ feature }}"
+            inputmode="decimal"
+            placeholder="Enter {{ feature | lower }}"
+            required
+          >
+          {% if feature == 'Region_encoded' %}
+            <div class="hint">Use training encoding: 0 = Bejaia, 1 = Sidi-Bel Abbes.</div>
+          {% else %}
+            <div class="hint">Provide the observed or derived value for {{ feature }}{% if feature in full_forms %} ({{ full_forms[feature] }}){% endif %}.</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="actions">
+      <div class="footer-note">The model will calculate a predicted FWI score after you submit all inputs.</div>
+      <div class="button-row">
+        <button class="btn" type="submit">Predict FWI</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}
