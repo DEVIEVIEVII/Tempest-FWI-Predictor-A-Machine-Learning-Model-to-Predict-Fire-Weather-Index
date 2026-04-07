@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Prediction Result</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+margin:0;
+padding:0;
+font-family: Arial, Helvetica, sans-serif;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+
+background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+url("/static/background3.jpg");
+
+background-size:cover;
+background-position:center;
+background-repeat:no-repeat;
+}
+
+.result-box{
+background:white;
+padding:40px;
+border-radius:15px;
+text-align:center;
+width:420px;
+box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+
+.result-value{
+font-size:45px;
+font-weight:bold;
+margin:10px 0;
+}
+
+.alert-box{
+font-size:22px;
+font-weight:bold;
+padding:10px;
+border-radius:8px;
+margin-top:10px;
+color:white;
+}
+
+canvas{
+margin-top:20px;
+}
+
+.try-btn{
+display:inline-block;
+padding:10px 20px;
+background:#ff5733;
+color:white;
+text-decoration:none;
+border-radius:8px;
+font-weight:bold;
+margin-top:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="result-box">
+
+<h2>🔥 Fire Weather Index Prediction</h2>
+
+<div class="result-value" id="value">
+{{ result }}
+</div>
+
+<div class="alert-box" id="riskLevel"></div>
+
+<canvas id="gaugeChart"></canvas>
+
+<a href="/" class="try-btn">Try Again</a>
+
+</div>
+
+<script>
+
+
+var predictedValue = Number("{{ result }}");
+
+
+if(isNaN(predictedValue)){
+predictedValue = 0;
+}
+
+var maxFWI = 40;
+if(predictedValue > maxFWI){
+predictedValue = maxFWI;
+}
+
+
+
+var riskText="";
+var riskColor="";
+
+if(predictedValue <= 2){
+riskText="LOW FIRE RISK";
+riskColor="green";
+}
+else if(predictedValue <= 5){
+riskText="MODERATE FIRE RISK";
+riskColor="orange";
+}
+else if(predictedValue <= 10){
+riskText="HIGH FIRE RISK";
+riskColor="red";
+}
+else{
+riskText="EXTREME FIRE RISK";
+riskColor="darkred";
+}
+
+
+var alertBox = document.getElementById("riskLevel");
+alertBox.innerHTML = riskText;
+alertBox.style.background = riskColor;
+
+
+new Chart(document.getElementById("gaugeChart"),{
+
+type:"doughnut",
+
+data:{
+datasets:[{
+data:[predictedValue, maxFWI - predictedValue],
+backgroundColor:[riskColor,"#e0e0e0"],
+borderWidth:0
+}]
+},
+
+options:{
+rotation:-90,
+circumference:180,
+cutout:"70%",
+
+plugins:{
+legend:{display:false},
+tooltip:{enabled:false}
+},
+
+animation:{
+duration:2000
+}
+}
+
+});
+
+</script>
+
+</body>
+</html>
