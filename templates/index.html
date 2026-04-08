@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FWI Predictor — Algerian Forest Fire</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0b0b0f;
+      --surface:  #13131a;
+      --card:     #1a1a24;
+      --border:   rgba(255,120,0,0.14);
+      --orange:   #ff6b00;
+      --amber:    #ffaa00;
+      --red:      #ff3a3a;
+      --yellow:   #ffe066;
+      --text:     #f0ead8;
+      --muted:    #7a7060;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body:    'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── EMBER CANVAS ── */
+    #ember-canvas {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 0;
+      opacity: 0.35;
+    }
+
+    /* ── LAYOUT ── */
+    .page {
+      position: relative; z-index: 1;
+      max-width: 860px; margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      text-align: center; margin-bottom: 3rem;
+      animation: fadeDown 0.8s ease both;
+    }
+    .header-eyebrow {
+      font-size: 11px; letter-spacing: 0.22em;
+      color: var(--orange); text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+    .header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(3.2rem, 9vw, 6rem);
+      line-height: 0.95;
+      background: linear-gradient(135deg, var(--yellow) 0%, var(--orange) 45%, var(--red) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 0.02em;
+    }
+    .header p {
+      margin-top: 1rem; font-size: 14px;
+      color: var(--muted); max-width: 420px; margin-inline: auto;
+      line-height: 1.7;
+    }
+
+    /* ── FLAME DIVIDER ── */
+    .flame-divider {
+      display: flex; align-items: center; gap: 12px;
+      justify-content: center; margin-bottom: 2.5rem;
+    }
+    .flame-divider span {
+      height: 1px; flex: 1;
+      background: linear-gradient(to right, transparent, var(--border));
+    }
+    .flame-divider span:last-child {
+      background: linear-gradient(to left, transparent, var(--border));
+    }
+    .flame-icon { font-size: 18px; }
+
+    /* ── FORM CARD ── */
+    .form-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      animation: fadeUp 0.9s 0.15s ease both;
+    }
+
+    .section-label {
+      font-size: 10px; letter-spacing: 0.18em;
+      color: var(--orange); text-transform: uppercase;
+      margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: var(--border);
+    }
+
+    /* ── GRID ── */
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    @media (max-width: 640px) {
+      .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 400px) {
+      .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    }
+
+    /* ── INPUT FIELD ── */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label {
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .field input, .field select {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,120,0,0.18);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      width: 100%;
+      -moz-appearance: textfield;
+    }
+    .field input::-webkit-outer-spin-button,
+    .field input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .field input:focus, .field select:focus {
+      border-color: var(--orange);
+      background: rgba(255,107,0,0.07);
+    }
+    .field select option { background: #1a1a24; color: var(--text); }
+    .field input::placeholder { color: var(--muted); opacity: 0.6; }
+
+    /* ── ERROR ── */
+    .error-box {
+      background: rgba(255,58,58,0.12);
+      border: 1px solid rgba(255,58,58,0.3);
+      border-radius: 10px; padding: 12px 16px;
+      color: #ff8a8a; font-size: 13px; margin-bottom: 1.5rem;
+    }
+
+    /* ── SUBMIT BUTTON ── */
+    .submit-wrap { margin-top: 1.5rem; }
+    .btn-predict {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, var(--orange), var(--red));
+      border: none; border-radius: 12px;
+      color: #fff; font-family: var(--font-display);
+      font-size: 1.35rem; letter-spacing: 0.08em;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn-predict::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--amber), var(--orange));
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .btn-predict:hover { transform: translateY(-1px); }
+    .btn-predict:hover::before { opacity: 1; }
+    .btn-predict:active { transform: scale(0.98); }
+    .btn-predict span { position: relative; z-index: 1; }
+
+    /* ── FOOTER NOTE ── */
+    .footnote {
+      text-align: center; margin-top: 2rem;
+      font-size: 12px; color: var(--muted);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="ember-canvas"></canvas>
+
+<div class="page">
+
+  <header class="header">
+    <p class="header-eyebrow">Algerian Forest Fire Dataset</p>
+    <h1>FIRE WEATHER<br>INDEX</h1>
+    <p>Enter atmospheric and fuel moisture conditions to predict the Fire Weather Index using a trained Ridge Regression model.</p>
+  </header>
+
+  <div class="flame-divider">
+    <span></span>
+    <span class="flame-icon">🔥</span>
+    <span></span>
+  </div>
+
+  {% if error %}
+  <div class="error-box">{{ error }}</div>
+  {% endif %}
+
+  <div class="form-card">
+    <form action="/predict" method="POST">
+
+      <div class="section-label">Date</div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Day</label>
+          <input type="number" name="day" placeholder="1–31" min="1" max="31" required>
+        </div>
+        <div class="field">
+          <label>Month</label>
+          <input type="number" name="month" placeholder="1–12" min="1" max="12" required>
+        </div>
+        <div class="field">
+          <label>Year</label>
+          <input type="number" name="year" placeholder="e.g. 2012" required>
+        </div>
+      </div>
+
+      <div class="section-label">Weather Conditions</div>
+      <div class="grid-4">
+        <div class="field">
+          <label>Temperature °C</label>
+          <input type="number" step="0.1" name="Temperature" placeholder="e.g. 32" required>
+        </div>
+        <div class="field">
+          <label>Humidity %</label>
+          <input type="number" step="0.1" name="RH" placeholder="e.g. 45" required>
+        </div>
+        <div class="field">
+          <label>Wind km/h</label>
+          <input type="number" step="0.1" name="Ws" placeholder="e.g. 18" required>
+        </div>
+        <div class="field">
+          <label>Rain mm</label>
+          <input type="number" step="0.1" name="Rain" placeholder="e.g. 0.5" required>
+        </div>
+      </div>
+
+      <div class="section-label">Fire Weather Indices</div>
+      <div class="grid-4">
+        <div class="field">
+          <label>FFMC</label>
+          <input type="number" step="0.1" name="FFMC" placeholder="e.g. 85.8" required>
+        </div>
+        <div class="field">
+          <label>DMC</label>
+          <input type="number" step="0.1" name="DMC" placeholder="e.g. 26.2" required>
+        </div>
+        <div class="field">
+          <label>DC</label>
+          <input type="number" step="0.1" name="DC" placeholder="e.g. 94.3" required>
+        </div>
+        <div class="field">
+          <label>ISI</label>
+          <input type="number" step="0.1" name="ISI" placeholder="e.g. 5.1" required>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>BUI</label>
+          <input type="number" step="0.1" name="BUI" placeholder="e.g. 33.6" required>
+        </div>
+        <div class="field" style="grid-column: span 1;">
+        </div>
+      </div>
+
+      <div class="section-label">Classification</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Fire Class</label>
+          <select name="Classes" required>
+            <option value="" disabled selected>Select class</option>
+            <option value="0">Not Fire (0)</option>
+            <option value="1">Fire (1)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Region</label>
+          <select name="Region" required>
+            <option value="" disabled selected>Select region</option>
+            <option value="0">Bejaia (0)</option>
+            <option value="1">Sidi-Bel-Abbes (1)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="submit-wrap">
+        <button type="submit" class="btn-predict">
+          <span>PREDICT FIRE WEATHER INDEX</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <p class="footnote">Model: Ridge Regression · Dataset: Algerian Forest Fires (2012)</p>
+
+</div>
+
+<script>
+  const canvas = document.getElementById('ember-canvas');
+  const ctx = canvas.getContext('2d');
+  let embers = [];
+  const W = () => canvas.width = window.innerWidth;
+  const H = () => canvas.height = window.innerHeight;
+
+  function resize() { W(); H(); }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function spawnEmber() {
+    embers.push({
+      x: Math.random() * canvas.width,
+      y: canvas.height + 10,
+      r: Math.random() * 2.2 + 0.6,
+      vx: (Math.random() - 0.5) * 0.7,
+      vy: -(Math.random() * 1.4 + 0.5),
+      life: 1,
+      decay: Math.random() * 0.006 + 0.003,
+      hue: Math.random() * 40 + 10
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (Math.random() < 0.22) spawnEmber();
+    embers = embers.filter(e => e.life > 0);
+    embers.forEach(e => {
+      e.x += e.vx + Math.sin(e.y * 0.03) * 0.4;
+      e.y += e.vy;
+      e.life -= e.decay;
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${e.hue}, 100%, 65%, ${e.life * 0.9})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+</script>
+</body>
+</html>

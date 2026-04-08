@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FWI Result — {{ risk_level }} Risk</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0b0b0f;
+      --surface:  #13131a;
+      --card:     #1a1a24;
+      --border:   rgba(255,120,0,0.14);
+      --orange:   #ff6b00;
+      --amber:    #ffaa00;
+      --red:      #ff3a3a;
+      --yellow:   #ffe066;
+      --text:     #f0ead8;
+      --muted:    #7a7060;
+      --accent:   {{ risk_color }};
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body:    'DM Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    #ember-canvas {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 0;
+      opacity: 0.4;
+    }
+
+    .page {
+      position: relative; z-index: 1;
+      max-width: 860px; margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    /* ── RESULT HERO ── */
+    .hero {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: scaleIn 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .hero-eyebrow {
+      font-size: 11px; letter-spacing: 0.22em;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 1rem;
+    }
+
+    .fwi-ring-wrap {
+      display: inline-flex; align-items: center; justify-content: center;
+      margin: 1rem 0 1.5rem;
+    }
+
+    .fwi-ring {
+      width: 200px; height: 200px; border-radius: 50%;
+      border: 3px solid var(--accent);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      position: relative;
+      box-shadow: 0 0 50px color-mix(in srgb, var(--accent) 30%, transparent),
+                  inset 0 0 30px color-mix(in srgb, var(--accent) 8%, transparent);
+      animation: ringPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes ringPulse {
+      0%,100% { box-shadow: 0 0 40px color-mix(in srgb, var(--accent) 25%, transparent), inset 0 0 20px color-mix(in srgb, var(--accent) 6%, transparent); }
+      50%      { box-shadow: 0 0 70px color-mix(in srgb, var(--accent) 45%, transparent), inset 0 0 40px color-mix(in srgb, var(--accent) 12%, transparent); }
+    }
+    .fwi-ring::before {
+      content: ''; position: absolute; inset: 8px; border-radius: 50%;
+      border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+    .fwi-number {
+      font-family: var(--font-display);
+      font-size: 4.5rem; line-height: 1;
+      color: var(--accent);
+      text-shadow: 0 0 30px color-mix(in srgb, var(--accent) 60%, transparent);
+    }
+    .fwi-unit {
+      font-size: 11px; letter-spacing: 0.14em;
+      color: var(--muted); margin-top: 2px;
+    }
+
+    .risk-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 20px; border-radius: 100px;
+      background: color-mix(in srgb, var(--accent) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+      font-family: var(--font-display); font-size: 1.5rem;
+      color: var(--accent); letter-spacing: 0.06em;
+      margin-bottom: 0.75rem;
+    }
+    .risk-pill::before {
+      content: ''; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent);
+      animation: blink 1.2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    .risk-desc {
+      font-size: 14px; color: var(--muted);
+      max-width: 380px; margin-inline: auto; line-height: 1.7;
+    }
+
+    /* ── SCALE BAR ── */
+    .scale-section {
+      margin: 2rem 0;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+    .scale-label-row {
+      display: flex; justify-content: space-between;
+      font-size: 10px; color: var(--muted);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .scale-track {
+      height: 8px; border-radius: 4px; position: relative;
+      background: linear-gradient(to right, #4ade80 0%, #facc15 30%, #fb923c 55%, #ef4444 80%, #991b1b 100%);
+    }
+    .scale-marker {
+      position: absolute; top: 50%; transform: translate(-50%, -50%);
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--accent);
+      border: 3px solid var(--bg);
+      box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 70%, transparent);
+      transition: left 1s cubic-bezier(0.34,1.4,0.64,1);
+    }
+    .scale-ticks {
+      display: flex; justify-content: space-between;
+      margin-top: 6px; font-size: 10px; color: var(--muted);
+    }
+
+    /* ── METRICS GRID ── */
+    .metrics-section {
+      margin-bottom: 2rem;
+      animation: fadeUp 0.8s 0.45s ease both;
+    }
+    .section-label {
+      font-size: 10px; letter-spacing: 0.18em;
+      color: var(--orange); text-transform: uppercase;
+      margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;
+    }
+    .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+    }
+    .metric-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 1rem;
+      display: flex; flex-direction: column; gap: 4px;
+      transition: border-color 0.2s;
+    }
+    .metric-card:hover { border-color: rgba(255,120,0,0.3); }
+    .metric-icon { font-size: 18px; margin-bottom: 4px; }
+    .metric-val {
+      font-family: var(--font-display);
+      font-size: 1.6rem; color: var(--amber);
+      line-height: 1;
+    }
+    .metric-key {
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+
+    /* ── BACK BUTTON ── */
+    .back-wrap {
+      text-align: center; margin-top: 2.5rem;
+      animation: fadeUp 0.8s 0.6s ease both;
+    }
+    .btn-back {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 28px; border-radius: 12px;
+      background: transparent;
+      border: 1px solid rgba(255,120,0,0.3);
+      color: var(--orange); font-family: var(--font-display);
+      font-size: 1.1rem; letter-spacing: 0.08em;
+      text-decoration: none; cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-back:hover {
+      background: rgba(255,107,0,0.1);
+      border-color: var(--orange);
+    }
+    .btn-back svg { width: 16px; height: 16px; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.88); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="ember-canvas"></canvas>
+
+<div class="page">
+
+  <div class="hero">
+    <p class="hero-eyebrow">Prediction Result</p>
+
+    <div class="fwi-ring-wrap">
+      <div class="fwi-ring">
+        <span class="fwi-number">{{ result }}</span>
+        <span class="fwi-unit">FWI SCORE</span>
+      </div>
+    </div>
+
+    <div class="risk-pill">{{ risk_level }} Risk</div>
+    <p class="risk-desc">{{ risk_desc }}</p>
+  </div>
+
+  <div class="scale-section">
+    <div class="scale-label-row">
+      <span>Low</span><span>Moderate</span><span>High</span><span>Very High</span><span>Extreme</span>
+    </div>
+    <div class="scale-track">
+      <div class="scale-marker" id="marker"></div>
+    </div>
+    <div class="scale-ticks">
+      <span>0</span><span>5.4</span><span>11.2</span><span>21.3</span><span>38</span><span>60+</span>
+    </div>
+  </div>
+
+  <div class="metrics-section">
+    <div class="section-label">Weather Inputs</div>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon">🌡️</div>
+        <div class="metric-val">{{ input_data.temperature }}°</div>
+        <div class="metric-key">Temperature</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">💧</div>
+        <div class="metric-val">{{ input_data.humidity }}%</div>
+        <div class="metric-key">Humidity</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">💨</div>
+        <div class="metric-val">{{ input_data.wind }}</div>
+        <div class="metric-key">Wind km/h</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">🌧️</div>
+        <div class="metric-val">{{ input_data.rain }}</div>
+        <div class="metric-key">Rain mm</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="metrics-section">
+    <div class="section-label">Fire Indices</div>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-val">{{ input_data.ffmc }}</div>
+        <div class="metric-key">FFMC</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">{{ input_data.dmc }}</div>
+        <div class="metric-key">DMC</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">{{ input_data.dc }}</div>
+        <div class="metric-key">DC</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">{{ input_data.isi }}</div>
+        <div class="metric-key">ISI</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">{{ input_data.bui }}</div>
+        <div class="metric-key">BUI</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="back-wrap">
+    <a href="/" class="btn-back">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M10 3L5 8l5 5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      NEW PREDICTION
+    </a>
+  </div>
+
+</div>
+
+<script>
+  /* ── position scale marker ── */
+  const fwi = {{ result }};
+  const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi, v));
+  const pct = clamp(fwi / 60 * 100, 1, 99);
+  setTimeout(() => {
+    document.getElementById('marker').style.left = pct + '%';
+  }, 400);
+
+  /* ── ember canvas ── */
+  const canvas = document.getElementById('ember-canvas');
+  const ctx = canvas.getContext('2d');
+  let embers = [];
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
+  function spawnEmber() {
+    embers.push({
+      x: Math.random() * canvas.width,
+      y: canvas.height + 10,
+      r: Math.random() * 2.5 + 0.5,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: -(Math.random() * 1.6 + 0.5),
+      life: 1, decay: Math.random() * 0.005 + 0.003,
+      hue: Math.random() * 40 + 10
+    });
+  }
+  function animate() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if (Math.random() < 0.28) spawnEmber();
+    embers = embers.filter(e => e.life > 0);
+    embers.forEach(e => {
+      e.x += e.vx + Math.sin(e.y * 0.03) * 0.45;
+      e.y += e.vy; e.life -= e.decay;
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+      ctx.fillStyle = `hsla(${e.hue},100%,65%,${e.life})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+</script>
+</body>
+</html>
